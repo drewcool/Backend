@@ -29,8 +29,8 @@ export default function CTASection() {
             />
 
             {/* Glowing orbs */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-[rgb(0,59,255)] opacity-10 blur-[80px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-[300px] h-[150px] bg-[rgb(51,98,255)] opacity-8 blur-[60px] pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-100 h-50 bg-[rgb(0,59,255)] opacity-10 blur-[80px] pointer-events-none" />
+            <div className="absolute bottom-0 right-1/4 w-75 h-37.5 bg-[rgb(51,98,255)] opacity-8 blur-[60px] pointer-events-none" />
 
             {/* Content */}
             <div className="relative z-10">

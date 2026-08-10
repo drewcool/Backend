@@ -21,8 +21,8 @@ const files = getAllHtmlFiles(templatesDir);
 files.forEach((filePath) => {
   let content = fs.readFileSync(filePath, "utf8");
   
-  // 1. Remove "Template By Praha" / "Template by Praha"
-  content = content.replace(/Template [bB]y Praha/g, "");
+  // 1. Remove "Template By Digimoga" / "Template by Digimoga"
+  content = content.replace(/Template [bB]y Digimoga/g, "");
 
   // 2. Replace @2024 with @2026
   content = content.replace(/@2024/g, "@2026");

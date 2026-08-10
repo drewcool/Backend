@@ -87,7 +87,7 @@ export default function BlogsPreview() {
               <Link href={`/blogs/${post.slug}`} className="group block">
                 <div className="rounded-2xl border border-[rgb(19,24,57)] overflow-hidden bg-[rgb(10,12,30)] hover:border-[rgb(28,35,84)] transition-all duration-300 h-full">
                   {/* Image */}
-                  <div className="relative overflow-hidden aspect-[16/10]">
+                  <div className="relative overflow-hidden aspect-16/10">
                     <Image
                       src={post.image}
                       alt={post.title}

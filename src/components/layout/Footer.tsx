@@ -35,7 +35,7 @@ export default function Footer() {
       />
 
       {/* Glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[rgb(0,59,255)] opacity-5 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute left-1/2 bottom-0 -translate-x-1/2 w-150 h-75 bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="section-container relative z-10 py-16 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">

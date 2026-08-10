@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import Lenis from "lenis";
 
 interface Props {
   css: string;
@@ -20,16 +21,51 @@ export default function TemplateRenderer({
   inlineScripts,
 }: Props) {
   const [iframeSrcDoc, setIframeSrcDoc] = useState("");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Initialize Lenis from npm for the iframe's scroll context
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    let lenis: Lenis;
+    let rafId: number;
+
+    const initLenis = () => {
+      const cw = iframe.contentWindow;
+      const cd = iframe.contentDocument;
+      if (!cw || !cd) return;
+
+      lenis = new Lenis({
+        wrapper: cd.documentElement,
+        content: cd.body,
+        autoRaf: true,
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+    };
+
+    iframe.addEventListener("load", initLenis);
+
+    return () => {
+      iframe.removeEventListener("load", initLenis);
+      if (lenis) lenis.destroy();
+    };
+  }, [iframeSrcDoc]);
+
+  // Lock the Next.js parent body scroll ONLY when rendering the Framer Template
+  useEffect(() => {
+    document.body.classList.add('framer-page-lock');
+    return () => {
+      document.body.classList.remove('framer-page-lock');
+    };
+  }, []);
 
   useEffect(() => {
-    // We run Framer inside an isolated srcDoc iframe to completely shield it from Next.js React 19 Fiber.
-    // This mathematically guarantees 0 React Error 299s and 0 Hydration Mismatches,
-    // while executing Framer Motion at 1:1 original standalone performance.
-
-    // Inject the surgical cleans directly inside the iframe before Framer boots up
+    
     const surgicalScript = `
       const applySurgicalCleans = () => {
-        // 1. Remove Figma/Praha badges natively
+        // 1. Remove Figma/Digimoga badges natively
         document.querySelectorAll(".framer-3ek784-container, .framer-lpe29j-container, #__framer-badge-container").forEach(el => el.remove());
         
         // 2. Swap all logo instances safely
@@ -54,8 +90,8 @@ export default function TemplateRenderer({
         textNodes.forEach((el) => {
           if (el.children.length === 0) {
             const txt = el.textContent;
-            if (txt && (txt.includes("Template By Praha") || txt.includes("Template by Praha"))) {
-              el.textContent = txt.replace(/Template [bB]y Praha/gi, "").trim();
+            if (txt && (txt.includes("Template By Digimoga") || txt.includes("Template by Digimoga"))) {
+              el.textContent = txt.replace(/Template [bB]y Digimoga/gi, "").trim();
             }
             if (txt && txt.includes("@2024")) {
               el.textContent = txt.replace(/@2024/g, "@2026");
@@ -99,10 +135,47 @@ export default function TemplateRenderer({
               opacity: 0 !important;
               pointer-events: none !important;
             }
+            /* Hide all Praha and Figma badges perfectly via CSS */
+            a[href*="figma.com"],
+            a[href*="prah"],
+            a[href*="lemonsqueezy.com"] {
+              display: none !important;
+              visibility: hidden !important;
+              opacity: 0 !important;
+              pointer-events: none !important;
+              width: 0 !important;
+              height: 0 !important;
+              position: absolute !important;
+            }
             body { margin: 0; padding: 0; overflow-x: hidden; background-color: #000; }
             /* Hide iframe scrollbar for seamless embedding */
             ::-webkit-scrollbar { width: 0px; background: transparent; }
           </style>
+
+          <!-- 🛑 THE NUCLEAR FIX: Hijack Chrome's Visibility and Observer APIs -->
+          <script>
+            // 1. Force Framer to think the tab is always active
+            Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+            Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+            
+            // 2. Hijack IntersectionObserver to ALWAYS report elements as fully on-screen
+            const OriginalObserver = window.IntersectionObserver;
+            window.IntersectionObserver = class HijackedObserver {
+              constructor(callback, options) {
+                this.observer = new OriginalObserver((entries, obs) => {
+                  entries.forEach(entry => {
+                    Object.defineProperty(entry, 'isIntersecting', { value: true });
+                    Object.defineProperty(entry, 'intersectionRatio', { value: 1 });
+                  });
+                  callback(entries, obs);
+                }, options);
+              }
+              observe(target) { this.observer.observe(target); }
+              unobserve(target) { this.observer.unobserve(target); }
+              disconnect() { this.observer.disconnect(); }
+            };
+          </script>
+          
           ${inlineScripts.map(code => `<script>${code}</script>`).join("\n")}
         </head>
         <body class="${bodyClass}">
@@ -124,6 +197,7 @@ export default function TemplateRenderer({
 
   return (
     <iframe
+      ref={iframeRef}
       className="framer-template-renderer"
       srcDoc={iframeSrcDoc}
       style={{

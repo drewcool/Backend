@@ -66,7 +66,7 @@ export default function WorksPreview() {
           </div>
           <Link
             href="/works"
-            className="flex items-center gap-2 text-sm font-medium font-inter-tight text-[rgb(167,173,190)] hover:text-white transition-colors border border-[rgb(28,35,84)] px-4 py-2.5 rounded-full hover:border-[rgb(0,59,255)] hover:bg-[rgba(0,59,255,0.05)] flex-shrink-0"
+            className="flex items-center gap-2 text-sm font-medium font-inter-tight text-[rgb(167,173,190)] hover:text-white transition-colors border border-[rgb(28,35,84)] px-4 py-2.5 rounded-full hover:border-[rgb(0,59,255)] hover:bg-[rgba(0,59,255,0.05)] shrink-0"
           >
             View All Works
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -92,7 +92,7 @@ export default function WorksPreview() {
               >
                 <Link href={`/works/${work.slug}`}>
                   {/* Image */}
-                  <div className="relative overflow-hidden aspect-[4/3]">
+                  <div className="relative overflow-hidden aspect-4/3">
                     <motion.div
                       className="w-full h-full"
                       whileHover={{ scale: 1.05 }}
@@ -108,7 +108,7 @@ export default function WorksPreview() {
                     </motion.div>
 
                     {/* Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[rgb(10,12,30)] via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-linear-to-t from-[rgb(10,12,30)] via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
 
                     {/* Hover reveal: View Project */}
                     <motion.div

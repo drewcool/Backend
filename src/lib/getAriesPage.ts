@@ -42,8 +42,8 @@ function fixCssPaths(css: string): string {
     .replace(/url\(assets\//g, "url(/assets/");
 }
 
-/** Surgical removal of ONLY Figma and Praha floating badge containers */
-function removeFigmaAndPrahaSurgically(html: string): string {
+/** Surgical removal of ONLY Figma and Digimoga floating badge containers */
+function removeFigmaAndDigimogaSurgically(html: string): string {
   let cleaned = html;
 
   // 1. Swap logo images directly in HTML
@@ -71,7 +71,7 @@ export function getAriesPage(templateRelativePath: string): AriesPageData {
   html = html.replace(/\r\n/g, "\n");
 
   // Surgical clean
-  html = removeFigmaAndPrahaSurgically(html);
+  html = removeFigmaAndDigimogaSurgically(html);
 
   // ── 1. Extract all <style> blocks ─────────────────────────────────────
   let css = "";

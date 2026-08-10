@@ -95,7 +95,7 @@ export default function FAQSection() {
                     <motion.span
                       animate={{ rotate: openIndex === i ? 45 : 0 }}
                       transition={{ duration: 0.25 }}
-                      className="flex-shrink-0 w-6 h-6 rounded-full border border-[rgb(28,35,84)] flex items-center justify-center text-[rgb(109,119,146)]"
+                      className="shrink-0 w-6 h-6 rounded-full border border-[rgb(28,35,84)] flex items-center justify-center text-[rgb(109,119,146)]"
                     >
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                         <path

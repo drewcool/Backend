@@ -58,7 +58,7 @@ export default function ProcessSection() {
         {/* Steps */}
         <div className="relative">
           {/* Connecting line */}
-          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[rgb(28,35,84)] to-transparent hidden sm:block" />
+          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-linear-to-b from-transparent via-[rgb(28,35,84)] to-transparent hidden sm:block" />
 
           <div className="space-y-12">
             {steps.map((step, i) => (
@@ -69,7 +69,7 @@ export default function ProcessSection() {
                   }`}
                 >
                   {/* Number bubble (center connector) */}
-                  <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-[rgb(0,2,15)] border-2 border-[rgb(0,59,255)] items-center justify-center z-10 flex-shrink-0">
+                  <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-[rgb(0,2,15)] border-2 border-[rgb(0,59,255)] items-center justify-center z-10 shrink-0">
                     <span className="text-[rgb(0,59,255)] text-xs font-medium font-inter-tight">
                       {step.number}
                     </span>

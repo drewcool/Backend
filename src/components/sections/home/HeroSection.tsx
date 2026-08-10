@@ -41,7 +41,7 @@ export default function HeroSection() {
       {/* Background gradient blobs */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full opacity-20"
+          className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-200 h-150 rounded-full opacity-20"
           style={{
             background:
               "radial-gradient(ellipse at center, rgb(0,59,255) 0%, transparent 70%)",
@@ -49,14 +49,14 @@ export default function HeroSection() {
           }}
         />
         <div
-          className="absolute top-1/2 left-[-15%] w-[500px] h-[400px] rounded-full opacity-10"
+          className="absolute top-1/2 left-[-15%] w-125 h-100 rounded-full opacity-10"
           style={{
             background: "radial-gradient(ellipse, rgb(51,98,255) 0%, transparent 70%)",
             filter: "blur(60px)",
           }}
         />
         <div
-          className="absolute top-1/3 right-[-10%] w-[400px] h-[400px] rounded-full opacity-10"
+          className="absolute top-1/3 right-[-10%] w-100 h-100 rounded-full opacity-10"
           style={{
             background: "radial-gradient(ellipse, rgb(102,137,255) 0%, transparent 70%)",
             filter: "blur(60px)",
@@ -228,11 +228,11 @@ export default function HeroSection() {
               priority
             />
             {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[rgb(0,2,15)] via-transparent to-transparent opacity-40" />
+            <div className="absolute inset-0 bg-linear-to-t from-[rgb(0,2,15)] via-transparent to-transparent opacity-40" />
           </div>
 
           {/* Glow under image */}
-          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-[rgb(0,59,255)] opacity-20 blur-[40px]" />
+          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-[rgb(0,59,255)] opacity-20 blur-2xl" />
         </motion.div>
       </div>
     </section>

@@ -24,7 +24,7 @@ export default function LogoMarquee() {
           {[...logos, ...logos].map((logo, i) => (
             <div
               key={i}
-              className="flex-shrink-0 mx-10 flex items-center justify-center opacity-40 hover:opacity-70 transition-opacity duration-300"
+              className="shrink-0 mx-10 flex items-center justify-center opacity-40 hover:opacity-70 transition-opacity duration-300"
             >
               <Image
                 src={logo.src}

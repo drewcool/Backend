@@ -4,9 +4,14 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100vw;
-  height: 100vh;
-  overflow: hidden !important; /* This is MANDATORY for iframe scroll tracking */
+  min-height: 100vh;
   background-color: #000;
+}
+
+/* This is MANDATORY for iframe scroll tracking, applied ONLY on Framer template pages */
+.framer-page-lock {
+  overflow: hidden !important;
+  height: 100vh !important;
 }
 
 /* Force the iframe to act as the scrollable window */

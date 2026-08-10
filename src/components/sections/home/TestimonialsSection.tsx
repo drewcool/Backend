@@ -80,7 +80,7 @@ export default function TestimonialsSection() {
 
                 {/* Author */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border border-[rgb(28,35,84)] flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-[rgb(28,35,84)] shrink-0">
                     <Image
                       src={t.avatar}
                       alt={t.name}
