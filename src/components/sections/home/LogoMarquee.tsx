@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 const logos = [
-  { src: "/images/j07dUDNi3R7s1hBgf9y7iH3NCA.2fa88.svg", alt: "Partner 1" },
+  { src: "/Logo.png", alt: "DigiMoga" },
   { src: "/images/UaNueSPHaU4uAnBboSMnR7WEc8.2fa88.svg", alt: "Partner 2" },
   { src: "/images/AdPfwI4laWSMfyInnvNTBjrcR0.2fa88.svg", alt: "Partner 3" },
   { src: "/images/jdzexwVUUG0v9Tn88L57oI3V28w.2fa88.svg", alt: "Partner 4" },

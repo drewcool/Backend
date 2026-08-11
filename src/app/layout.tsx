@@ -3,9 +3,9 @@ import "./globals.css";
 import LenisProvider from "@/components/ui/LenisProvider";
 
 export const metadata: Metadata = {
-  title: "DigiMoga — Premier Agency Landing Page Template",
+  title: "DigiMoga — Premier Agency Landing Page",
   description:
-    "Elevate your agency's online presence with DigiMoga, a meticulously crafted Framer template for creative agencies.",
+    "Elevate your agency's online presence with DigiMoga, meticulously crafted for creative agencies.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

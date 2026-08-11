@@ -51,7 +51,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
               <Image
-                src="/images/0RVP3HSTOxbLQpHFYKd8UstCPQ.2fa88.svg"
+                src="/Logo.png"
                 alt="DigiMoga Logo"
                 width={32}
                 height={32}

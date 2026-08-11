@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Lenis from "lenis";
+import { useLenis } from "lenis/react";
 
 interface Props {
   css: string;
@@ -29,7 +30,6 @@ export default function TemplateRenderer({
     if (!iframe) return;
 
     let lenis: Lenis;
-    let rafId: number;
 
     const initLenis = () => {
       const cw = iframe.contentWindow;
@@ -53,6 +53,17 @@ export default function TemplateRenderer({
     };
   }, [iframeSrcDoc]);
 
+  // Stop the parent (Next.js root) Lenis RAF while the iframe is active.
+  // Without this, two separate RAF animation loops run simultaneously:
+  // one for the locked parent body (doing nothing useful) and one inside
+  // the iframe — wasting CPU on every single frame.
+  const parentLenis = useLenis();
+  useEffect(() => {
+    if (!parentLenis) return;
+    parentLenis.stop();
+    return () => { parentLenis.start(); };
+  }, [parentLenis]);
+
   // Lock the Next.js parent body scroll ONLY when rendering the Framer Template
   useEffect(() => {
     document.body.classList.add('framer-page-lock');
@@ -64,30 +75,75 @@ export default function TemplateRenderer({
   useEffect(() => {
     
     const surgicalScript = `
-      const applySurgicalCleans = () => {
-        // 1. Remove Figma/Digimoga badges natively
-        document.querySelectorAll(".framer-3ek784-container, .framer-lpe29j-container, #__framer-badge-container").forEach(el => el.remove());
-        
-        // 2. Swap all logo instances safely
-        const logoImgs = document.querySelectorAll('img[src*="PNBw6IRBeTzFMheULCykzniB9Q"], img[src*="0RVP3HSTOxbLQpHFYKd8UstCPQ"], img[src*="j07dUDNi3R7s1hBgf9y7iH3NCA"], img[alt="Logo"], [data-framer-name="Logo"] img');
-        logoImgs.forEach((img) => {
-          if (!img.src.includes("/Logo.png")) {
-            // Lock exact dimensions to prevent Framer Motion Ticker from freezing and keep Logo the correct size!
-            if (!img.style.width) {
-              const rect = img.getBoundingClientRect();
-              if (rect.width > 0) {
-                img.style.width = rect.width + "px";
-                img.style.height = rect.height + "px";
-              }
+      // ── LOGO GUARDIAN (zero-delay, starts immediately) ─────────────────────
+      // MutationObserver watching ONLY src/srcset attributes.
+      // MutationObserver callbacks are microtasks — they fire between JS operations,
+      // BEFORE the browser paints the next frame. So when Framer hydration overwrites
+      // img.src with the Aries hash, we revert it in the same frame. The browser
+      // never renders the Aries logo — eliminating the 1-frame disappear blink.
+
+      const ARIES_HASHES = ["PNBw6IRBeTzFMheULCykzniB9Q", "0RVP3HSTOxbLQpHFYKd8UstCPQ", "j07dUDNi3R7s1hBgf9y7iH3NCA", "gej9Vnua3h6ntvlEXMy8d6WLLnM", "3p0IlyunupDBI3v4BHnlGEV03Gw"];
+      const isAriesLogoSrc = (val) => val && ARIES_HASHES.some(h => val.includes(h));
+
+      const swapToDigiLogo = (img) => {
+        if (!img.style.width) {
+          const rect = img.getBoundingClientRect();
+          if (rect.width > 0) {
+            img.style.width = rect.width + "px";
+            img.style.height = rect.height + "px";
+          }
+        }
+        img.src = "/Logo.png";
+        if (img.hasAttribute("srcset")) {
+          img.removeAttribute("srcset");
+        }
+      };
+
+      // Initial pass — catch anything that slipped through server-side replacement
+      document.querySelectorAll("img").forEach(img => {
+        if (isAriesLogoSrc(img.getAttribute("src")) || isAriesLogoSrc(img.getAttribute("srcset"))) {
+          swapToDigiLogo(img);
+        }
+      });
+
+      // Watch ONLY src/srcset attributes — extremely cheap, zero impact on scroll performance.
+      // attributeFilter limits to exactly these two attributes; no childList, no subtree text scan.
+      const logoGuardian = new MutationObserver((mutations) => {
+        mutations.forEach((m) => {
+          if (m.type === "attributes") {
+            const img = m.target;
+            if (isAriesLogoSrc(img.getAttribute("src")) || isAriesLogoSrc(img.getAttribute("srcset"))) {
+              swapToDigiLogo(img);
             }
-            img.src = "/Logo.png";
-            if (img.srcset) img.srcset = "/Logo.png";
           }
         });
+      });
 
-        // 3. Update Footer strings
-        const textNodes = document.querySelectorAll("p, span, div, a");
-        textNodes.forEach((el) => {
+      logoGuardian.observe(document.documentElement, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["src", "srcset"]   // Only these two — ignores all other mutations
+      });
+
+      // Disconnect after Framer hydration fully settles
+      setTimeout(() => logoGuardian.disconnect(), 10000);
+
+      // ── DEBOUNCE UTILITY ────────────────────────────────────────────────────
+      function debounce(fn, wait) {
+        let t;
+        return function() { clearTimeout(t); t = setTimeout(fn, wait); };
+      }
+
+      // ── BADGE + TEXT CLEANUP (1000ms delay to avoid Framer Error 422) ───────
+      // Logo swapping is handled by the guardian above — this section only
+      // handles badge removal and one-time footer text cleanup.
+
+      const removeBadges = () => {
+        document.querySelectorAll(".framer-3ek784-container, .framer-lpe29j-container, #__framer-badge-container").forEach(el => el.remove());
+      };
+
+      const applyTextCleans = () => {
+        document.querySelectorAll("p, span, div, a").forEach((el) => {
           if (el.children.length === 0) {
             const txt = el.textContent;
             if (txt && (txt.includes("Template By Digimoga") || txt.includes("Template by Digimoga"))) {
@@ -100,24 +156,40 @@ export default function TemplateRenderer({
         });
       };
 
-      // Wait 1000ms for Framer React Hydration to complete to absolutely prevent Error 422!
       setTimeout(() => {
-        applySurgicalCleans();
-        
-        // KICKSTART CHROME'S INTERNAL OBSERVER INSIDE THE IFRAME
-        window.dispatchEvent(new Event('resize')); 
-        
-        // Run continuously to fight Framer React Hydration overwrites inside the Ticker
-        const observer = new MutationObserver(applySurgicalCleans);
-        observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+        removeBadges();
+        applyTextCleans();
+
+        window.dispatchEvent(new Event("resize"));
+
+        // Badge removal re-runs for 10s to fight Framer hydration re-inserts
+        const debouncedBadge = debounce(removeBadges, 500);
+        const badgeObserver = new MutationObserver(debouncedBadge);
+        badgeObserver.observe(document.body, { childList: true, subtree: true });
+        setTimeout(() => badgeObserver.disconnect(), 10000);
       }, 1000);
 
-      // 4. Intercept clicks to route through the parent Next.js router
+      // Intercept clicks to route through the parent Next.js router
       document.addEventListener("click", (e) => {
         const a = e.target.closest("a");
         if (a && a.href && !a.href.startsWith("javascript:") && a.target !== "_blank") {
           e.preventDefault();
-          window.parent.location.href = a.href;
+          let targetUrl = a.href;
+          
+          // Fix .html extensions for Next.js routing (e.g. index.html -> /, blogs.html -> /blogs)
+          try {
+            const urlObj = new URL(targetUrl);
+            if (urlObj.origin === window.parent.location.origin) {
+              if (urlObj.pathname.endsWith("index.html")) {
+                urlObj.pathname = urlObj.pathname.replace(/index\.html$/, "");
+              } else if (urlObj.pathname.endsWith(".html")) {
+                urlObj.pathname = urlObj.pathname.replace(/\.html$/, "");
+              }
+              targetUrl = urlObj.pathname + urlObj.search + urlObj.hash;
+            }
+          } catch (err) {}
+          
+          window.parent.location.href = targetUrl;
         }
       });
     `;
@@ -150,30 +222,23 @@ export default function TemplateRenderer({
             body { margin: 0; padding: 0; overflow-x: hidden; background-color: #000; }
             /* Hide iframe scrollbar for seamless embedding */
             ::-webkit-scrollbar { width: 0px; background: transparent; }
+            /* Instantly hide ALL Arise logo images the moment the iframe loads.
+               Covers all 5 known hashes: 3 main/navbar + 2 footer logos.
+               Once img.src is replaced with /Logo.png, these selectors stop matching. */
+            img[src*="PNBw6IRBeTzFMheULCykzniB9Q"],
+            img[src*="0RVP3HSTOxbLQpHFYKd8UstCPQ"],
+            img[src*="j07dUDNi3R7s1hBgf9y7iH3NCA"],
+            img[src*="gej9Vnua3h6ntvlEXMy8d6WLLnM"],
+            img[src*="3p0IlyunupDBI3v4BHnlGEV03Gw"] {
+              opacity: 0 !important;
+            }
           </style>
 
-          <!-- 🛑 THE NUCLEAR FIX: Hijack Chrome's Visibility and Observer APIs -->
           <script>
-            // 1. Force Framer to think the tab is always active
+            // Keep Framer animations running even when the browser tab is not focused.
+            // Safe: only overrides the visibility state, does not affect scroll or IntersectionObserver.
             Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
             Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
-            
-            // 2. Hijack IntersectionObserver to ALWAYS report elements as fully on-screen
-            const OriginalObserver = window.IntersectionObserver;
-            window.IntersectionObserver = class HijackedObserver {
-              constructor(callback, options) {
-                this.observer = new OriginalObserver((entries, obs) => {
-                  entries.forEach(entry => {
-                    Object.defineProperty(entry, 'isIntersecting', { value: true });
-                    Object.defineProperty(entry, 'intersectionRatio', { value: 1 });
-                  });
-                  callback(entries, obs);
-                }, options);
-              }
-              observe(target) { this.observer.observe(target); }
-              unobserve(target) { this.observer.unobserve(target); }
-              disconnect() { this.observer.disconnect(); }
-            };
           </script>
           
           ${inlineScripts.map(code => `<script>${code}</script>`).join("\n")}

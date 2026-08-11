@@ -43,7 +43,7 @@ export default function Footer() {
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <Image
-                src="/images/0RVP3HSTOxbLQpHFYKd8UstCPQ.2fa88.svg"
+                src="/Logo.png"
                 alt="DigiMoga Logo"
                 width={32}
                 height={32}

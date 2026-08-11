@@ -46,17 +46,45 @@ function fixCssPaths(css: string): string {
 function removeFigmaAndDigimogaSurgically(html: string): string {
   let cleaned = html;
 
-  // 1. Swap logo images directly in HTML
-  cleaned = cleaned.replace(/images\/PNBw6IRBeTzFMheULCykzniB9Q\.2fa88\.svg/g, "/Logo.png");
-  cleaned = cleaned.replace(/images\/j07dUDNi3R7s1hBgf9y7iH3NCA\.2fa88\.svg/g, "/Logo.png");
-  cleaned = cleaned.replace(/images\/0RVP3HSTOxbLQpHFYKd8UstCPQ\.2fa88\.svg/g, "/Logo.png");
+  // 1. Swap ALL Arise logo image hashes — catches every size/format variant Framer generates.
+  //    Covers: relative paths (images/...), absolute CDN paths (framerusercontent.com/images/...)
+  //    5 known hashes: 3 navbar/main logo + 2 footer logo hashes (gej9 and 3p0I).
+  const ARISE_LOGO_HASHES = [
+    "PNBw6IRBeTzFMheULCykzniB9Q",
+    "j07dUDNi3R7s1hBgf9y7iH3NCA",
+    "0RVP3HSTOxbLQpHFYKd8UstCPQ",
+    "gej9Vnua3h6ntvlEXMy8d6WLLnM",  // footer logo (testimonials section)
+    "3p0IlyunupDBI3v4BHnlGEV03Gw",  // footer logo (all pages)
+  ];
+  const hashPattern = ARISE_LOGO_HASHES.join("|");
 
-  // 2. Remove ONLY specific floating badge containers
+  // Relative path: images/<hash>.<variant>.<ext>
+  cleaned = cleaned.replace(
+    new RegExp(`images/(${hashPattern})\\.[a-z0-9]+\\.(svg|png|jpg)`, "gi"),
+    "/Logo.png"
+  );
+  // CDN path: framerusercontent.com/images/<hash>.<ext> or /assets/<hash>.<ext>
+  cleaned = cleaned.replace(
+    new RegExp(`https://framerusercontent\\.com/(?:images|assets)/(${hashPattern})\\.\\S+?(?=["'\\s])`, "gi"),
+    "/Logo.png"
+  );
+
+  // 2. Remove "Template By Digimoga" / "Template by Digimoga" text at server level.
+  //    This is a best-effort pass — Framer hydration re-renders from JS data,
+  //    but the client-side applyTextCleans() catches anything that re-appears.
+  cleaned = cleaned.replace(/Template [Bb]y Digimoga/g, "");
+
+  // 3. Update copyright year
+  cleaned = cleaned.replace(/@2024, All Rights Reserved/g, "@2026, All Rights Reserved");
+  cleaned = cleaned.replace(/>@2024</g, ">@2026<");
+
+  // 4. Remove ONLY specific floating badge containers
   cleaned = cleaned.replace(/<div class="framer-lpe29j-container">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/gi, "");
   cleaned = cleaned.replace(/<div class="framer-3ek784-container">[\s\S]*?<\/div>/gi, "");
 
   return cleaned;
 }
+
 
 /**
  * Reads a Framer template HTML file and extracts everything needed to
